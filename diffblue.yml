@@ -1,0 +1,382 @@
+# Copyright 2019 Diffblue Limited. All Rights Reserved.
+buildCmd: "mvn -e -X -Dlicense.skip=true -Dmaven.enforcer.skip=true -Denforcer.skip=true -Dair.check.skip-all=true -Dair.check.skip-all=true  -Dmaven.compiler.source=8 -Dmaven.compiler.target=8 -Dmaven.test.skip=true compile"
+testCmd: true
+cbmcArguments:
+  # Constrain the size of arrays created in the analyzed code.
+  java-max-vla-length: 100000
+  # Set a limit on the number of instructions that can be generated as part of a test trace.
+  depth: false
+  # Strategy for test object generation
+  java-test-input-factory: false
+  # Allow up to N mutator calls after a test input constructor (default 0)
+  java-test-input-factory-bmc-max-mutators: false
+  # Limit input factory recursive depth
+  java-test-input-factory-bmc-recursion-limit: false
+  # Do not generate coverage comments on generated tests.
+  java-generate-no-comments: true
+  # For an accessible function under test that returns a primitive, boxed primitive,
+  # string or null value, prints its call inlined into the assertion on the return value
+  inline-into-assertion: true
+  # For function arguments that are primitive, boxed primitive, string or null value, prints
+  # them inlined into the call to the function under test.
+  inline-function-arguments: true
+  # Do not generate tests for methods with the specified access modifier
+  do-not-test-methods-with-access: [private]
+  # alias for --cover-only function
+  cover-function-only: false
+  # Only add coverage goals to (i.e. "instrument") functions satisfying criterion C
+  cover-only: file
+phases:
+  # Phase 0
+  - timeout: 150
+    cbmcArguments:
+      # Use simple models first containers (ArrayList, HashMap, HashSet,...) will have a maximum size of one.
+      classpath: '/tools/cbmc/models-simple-overlay.jar:/tools/cbmc/models.jar:.'
+      # Instantiate classes using the simplest constructor strategy
+      smart-harness: simplest-constructor-and-nondet
+      # Never initialize reference-typed parameter to the entry point with null.
+      java-assume-inputs-non-null: true
+      # Maximum allowed length for an array passed as test input.
+      max-nondet-array-length: 10
+      # Bound the length of input strings.
+      max-nondet-string-length: 10
+      # Add constraint that char and strings are printable
+      string-printable: true
+      # Make implicit runtime exceptions explicit.
+      throw-runtime-exceptions: false
+      # Set an upper bound on loop unwinding.
+      unwind: 1
+      # Set string input value
+      string-input-value: ["foo", "a/b/c", "a'b'c", ",", "/", "'"]
+      # Only initialize numerical primitive-typed parameter to an entry point within the given range
+      java-assume-inputs-interval: "[2:999999]"
+      # Force float and double inputs to have integer values.
+      java-assume-inputs-integral: true
+  # Phase 1
+  - timeout: 150
+    cbmcArguments:
+      # Use simple models first containers (ArrayList, HashMap, HashSet,...) will have a maximum size of one.
+      classpath: '/tools/cbmc/models-simple-overlay.jar:/tools/cbmc/models.jar:.'
+      # Never initialize reference-typed parameter to the entry point with null.
+      java-assume-inputs-non-null: true
+      # Maximum allowed length for an array passed as test input.
+      max-nondet-array-length: 10
+      # Bound the length of input strings.
+      max-nondet-string-length: 10
+      # Add constraint that char and strings are printable
+      string-printable: true
+      # Make implicit runtime exceptions explicit.
+      throw-runtime-exceptions: false
+      # Set an upper bound on loop unwinding.
+      unwind: 1
+      # Set string input value
+      string-input-value: "foo"
+      # Only initialize numerical primitive-typed parameter to an entry point within the given range
+      java-assume-inputs-interval: "[-999999:-2]"
+      # Force float and double inputs to have integer values.
+      java-assume-inputs-integral: true
+  # Phase 2
+  - timeout: 150
+    cbmcArguments:
+      # Use standard diffblue models library
+      classpath: '/tools/cbmc/models.jar:.'
+      # Never initialize reference-typed parameter to the entry point with null.
+      java-assume-inputs-non-null: false
+      # Maximum allowed length for an array passed as test input.
+      max-nondet-array-length: 30
+      # Bound the length of input strings.
+      max-nondet-string-length: 100
+      # Add constraint that char and strings are printable
+      string-printable: false
+      # Make implicit runtime exceptions explicit.
+      throw-runtime-exceptions: false
+      # Set an upper bound on loop unwinding.
+      unwind: 3
+  # Phase 3
+  - timeout: 150
+    cbmcArguments:
+      # Use simple models first containers (ArrayList, HashMap, HashSet,...) will have a maximum size of one.
+      classpath: '/tools/cbmc/models-simple-overlay.jar:/tools/cbmc/models.jar:.'
+      # Instantiate classes using the simplest constructor strategy
+      smart-harness: simplest-constructor-and-nondet
+      # Never initialize reference-typed parameter to the entry point with null.
+      java-assume-inputs-non-null: true
+      # Maximum allowed length for an array passed as test input.
+      max-nondet-array-length: 10
+      # Bound the length of input strings.
+      max-nondet-string-length: 10
+      # Add constraint that char and strings are printable
+      string-printable: true
+      # Make implicit runtime exceptions explicit.
+      throw-runtime-exceptions: false
+      # Set an upper bound on loop unwinding.
+      unwind: 1
+  # Phase 4
+  - timeout: 150
+    cbmcArguments:
+      # Use simple models first containers (ArrayList, HashMap, HashSet,...) will have a maximum size of one
+      classpath: '/tools/cbmc/models-simple-overlay.jar:/tools/cbmc/models.jar:.'
+      # Never initialize reference-typed parameter to the entry point with null.
+      java-assume-inputs-non-null: true
+      # Maximum allowed length for an array passed as test input.
+      max-nondet-array-length: 10
+      # Bound the length of input strings.
+      max-nondet-string-length: 10
+      # Add constraint that char and strings are printable
+      string-printable: true
+      # Make implicit runtime exceptions explicit.
+      throw-runtime-exceptions: false
+      # Set an upper bound on loop unwinding.
+      unwind: 1
+  # Phase 5
+  - timeout: 150
+    cbmcArguments:
+      # Use simple models first containers (ArrayList, HashMap, HashSet,...) will have a maximum size of one
+      classpath: '/tools/cbmc/models-simple-overlay.jar:/tools/cbmc/models.jar:.'
+      # initialize reference-typed parameter to the entry point with null.
+      java-assume-inputs-non-null: false
+      # Maximum allowed length for an array passed as test input.
+      max-nondet-array-length: 20
+      # Bound the length of input strings.
+      max-nondet-string-length: 50
+      # Add constraint that char and strings are printable
+      string-printable: true
+      # Make implicit runtime exceptions explicit.
+      throw-runtime-exceptions: false
+      # Set an upper bound on loop unwinding.
+      unwind: 2
+  # Phase 6
+  - timeout: 100
+    cbmcArguments:
+      # Use standard diffblue models library
+      classpath: '/tools/cbmc/models.jar:.'
+      # Never initialize reference-typed parameter to the entry point with null.
+      java-assume-inputs-non-null: false
+      # Maximum allowed length for an array passed as test input.
+      max-nondet-array-length: 30
+      # Bound the length of input strings.
+      max-nondet-string-length: 100
+      # Explores the program tree breadth-first.
+      paths: fifo
+      # No constraint that char and strings are printable
+      string-printable: false
+      # Make implicit runtime exceptions explicit.
+      throw-runtime-exceptions: false
+      # Set an upper bound on loop unwinding.
+      unwind: false
+  # Phase 7
+  - timeout: 150
+    cbmcArguments:
+      # Use standard diffblue models library
+      classpath: '/tools/cbmc/models.jar:.'
+      # Never initialize reference-typed parameter to the entry point with null.
+      java-assume-inputs-non-null: false
+      # Maximum allowed length for an array passed as test input.
+      max-nondet-array-length: 30
+      # Bound the length of input strings.
+      max-nondet-string-length: 100
+      # No constraint that char and strings are printable
+      string-printable: false
+      # Make implicit runtime exceptions explicit.
+      throw-runtime-exceptions: true
+      # Set an upper bound on loop unwinding
+      unwind: 3
+units:
+ - target:
+   - dir: hessian-lite/target/classes
+     file: com/caucho/burlap/client/MicroBurlapOutput.class
+     sourceDir: hessian-lite/src/main/java
+     sourceFile: com/caucho/burlap/client/MicroBurlapOutput.java
+ - target:
+   - dir: hessian-lite/target/classes
+     file: com/caucho/hessian/util/IntMap.class
+     sourceDir: hessian-lite/src/main/java
+     sourceFile: com/caucho/hessian/util/IntMap.java
+ - target:
+   - dir: hessian-lite/target/classes
+     file: com/caucho/services/server/AbstractSkeleton.class
+     sourceDir: hessian-lite/src/main/java
+     sourceFile: com/caucho/services/server/AbstractSkeleton.java
+ - target:
+   - dir: hessian-lite/target/classes
+     file: com/caucho/burlap/client/BurlapProxyFactory.class
+     sourceDir: hessian-lite/src/main/java
+     sourceFile: com/caucho/burlap/client/BurlapProxyFactory.java
+   - dir: hessian-lite/target/classes
+     file: com/caucho/burlap/io/BurlapRemoteResolver.class
+     sourceDir: hessian-lite/src/main/java
+     sourceFile: com/caucho/burlap/io/BurlapRemoteResolver.java
+   - dir: hessian-lite/target/classes
+     file: com/caucho/burlap/client/BurlapRuntimeException.class
+     sourceDir: hessian-lite/src/main/java
+     sourceFile: com/caucho/burlap/client/BurlapRuntimeException.java
+   - dir: hessian-lite/target/classes
+     file: com/caucho/hessian/io/AbstractHessianOutput.class
+     sourceDir: hessian-lite/src/main/java
+     sourceFile: com/caucho/hessian/io/AbstractHessianOutput.java
+   - dir: hessian-lite/target/classes
+     file: com/caucho/hessian/io/SerializerFactory.class
+     sourceDir: hessian-lite/src/main/java
+     sourceFile: com/caucho/hessian/io/SerializerFactory.java
+   - dir: hessian-lite/target/classes
+     file: com/caucho/burlap/io/BurlapOutput.class
+     sourceDir: hessian-lite/src/main/java
+     sourceFile: com/caucho/burlap/io/BurlapOutput.java
+   - dir: hessian-lite/target/classes
+     file: com/caucho/burlap/client/BurlapProxyResolver.class
+     sourceDir: hessian-lite/src/main/java
+     sourceFile: com/caucho/burlap/client/BurlapProxyResolver.java
+   - dir: hessian-lite/target/classes
+     file: com/caucho/hessian/io/AbstractHessianInput.class
+     sourceDir: hessian-lite/src/main/java
+     sourceFile: com/caucho/hessian/io/AbstractHessianInput.java
+   - dir: hessian-lite/target/classes
+     file: com/caucho/burlap/io/AbstractBurlapOutput.class
+     sourceDir: hessian-lite/src/main/java
+     sourceFile: com/caucho/burlap/io/AbstractBurlapOutput.java
+   - dir: hessian-lite/target/classes
+     file: com/caucho/burlap/client/BurlapMetaInfoAPI.class
+     sourceDir: hessian-lite/src/main/java
+     sourceFile: com/caucho/burlap/client/BurlapMetaInfoAPI.java
+   - dir: hessian-lite/target/classes
+     file: com/caucho/hessian/io/ContextSerializerFactory.class
+     sourceDir: hessian-lite/src/main/java
+     sourceFile: com/caucho/hessian/io/ContextSerializerFactory.java
+   - dir: hessian-lite/target/classes
+     file: com/caucho/hessian/io/AbstractSerializerFactory.class
+     sourceDir: hessian-lite/src/main/java
+     sourceFile: com/caucho/hessian/io/AbstractSerializerFactory.java
+   - dir: hessian-lite/target/classes
+     file: com/caucho/hessian/io/UnsafeDeserializer.class
+     sourceDir: hessian-lite/src/main/java
+     sourceFile: com/caucho/hessian/io/UnsafeDeserializer.java
+   - dir: hessian-lite/target/classes
+     file: com/caucho/hessian/HessianException.class
+     sourceDir: hessian-lite/src/main/java
+     sourceFile: com/caucho/hessian/HessianException.java
+   - dir: hessian-lite/target/classes
+     file: com/caucho/hessian/io/UnsafeSerializer.class
+     sourceDir: hessian-lite/src/main/java
+     sourceFile: com/caucho/hessian/io/UnsafeSerializer.java
+   - dir: hessian-lite/target/classes
+     file: com/caucho/burlap/io/AbstractBurlapInput.class
+     sourceDir: hessian-lite/src/main/java
+     sourceFile: com/caucho/burlap/io/AbstractBurlapInput.java
+   - dir: hessian-lite/target/classes
+     file: com/caucho/burlap/client/BurlapProxy.class
+     sourceDir: hessian-lite/src/main/java
+     sourceFile: com/caucho/burlap/client/BurlapProxy.java
+   - dir: hessian-lite/target/classes
+     file: com/caucho/burlap/io/BurlapInput.class
+     sourceDir: hessian-lite/src/main/java
+     sourceFile: com/caucho/burlap/io/BurlapInput.java
+ - target:
+   - dir: hessian-lite/target/classes
+     file: com/caucho/hessian/util/IdentityIntMap.class
+     sourceDir: hessian-lite/src/main/java
+     sourceFile: com/caucho/hessian/util/IdentityIntMap.java
+ - target:
+   - dir: hessian-lite/target/classes
+     file: com/caucho/hessian/client/HessianProxyFactory.class
+     sourceDir: hessian-lite/src/main/java
+     sourceFile: com/caucho/hessian/client/HessianProxyFactory.java
+   - dir: hessian-lite/target/classes
+     file: com/caucho/hessian/io/Hessian2Output.class
+     sourceDir: hessian-lite/src/main/java
+     sourceFile: com/caucho/hessian/io/Hessian2Output.java
+   - dir: hessian-lite/target/classes
+     file: com/caucho/hessian/client/HessianRuntimeException.class
+     sourceDir: hessian-lite/src/main/java
+     sourceFile: com/caucho/hessian/client/HessianRuntimeException.java
+   - dir: hessian-lite/target/classes
+     file: com/caucho/hessian/io/AbstractHessianOutput.class
+     sourceDir: hessian-lite/src/main/java
+     sourceFile: com/caucho/hessian/io/AbstractHessianOutput.java
+   - dir: hessian-lite/target/classes
+     file: com/caucho/hessian/io/HessianDebugInputStream.class
+     sourceDir: hessian-lite/src/main/java
+     sourceFile: com/caucho/hessian/io/HessianDebugInputStream.java
+   - dir: hessian-lite/target/classes
+     file: com/caucho/hessian/io/HessianOutput.class
+     sourceDir: hessian-lite/src/main/java
+     sourceFile: com/caucho/hessian/io/HessianOutput.java
+   - dir: hessian-lite/target/classes
+     file: com/caucho/hessian/client/HessianProxyResolver.class
+     sourceDir: hessian-lite/src/main/java
+     sourceFile: com/caucho/hessian/client/HessianProxyResolver.java
+   - dir: hessian-lite/target/classes
+     file: com/caucho/hessian/io/HessianDebugState$InitialState.class
+     sourceDir: hessian-lite/src/main/java
+     sourceFile: com/caucho/hessian/io/HessianDebugState.java
+   - dir: hessian-lite/target/classes
+     file: com/caucho/hessian/io/HessianDebugState$State.class
+     sourceDir: hessian-lite/src/main/java
+     sourceFile: com/caucho/hessian/io/HessianDebugState.java
+   - dir: hessian-lite/target/classes
+     file: com/caucho/hessian/io/AbstractHessianInput.class
+     sourceDir: hessian-lite/src/main/java
+     sourceFile: com/caucho/hessian/io/AbstractHessianInput.java
+   - dir: hessian-lite/target/classes
+     file: com/caucho/hessian/io/HessianDebugState.class
+     sourceDir: hessian-lite/src/main/java
+     sourceFile: com/caucho/hessian/io/HessianDebugState.java
+   - dir: hessian-lite/target/classes
+     file: com/caucho/hessian/io/HessianRemoteResolver.class
+     sourceDir: hessian-lite/src/main/java
+     sourceFile: com/caucho/hessian/io/HessianRemoteResolver.java
+   - dir: hessian-lite/target/classes
+     file: com/caucho/hessian/client/HessianMetaInfoAPI.class
+     sourceDir: hessian-lite/src/main/java
+     sourceFile: com/caucho/hessian/client/HessianMetaInfoAPI.java
+   - dir: hessian-lite/target/classes
+     file: com/caucho/hessian/io/ContextSerializerFactory.class
+     sourceDir: hessian-lite/src/main/java
+     sourceFile: com/caucho/hessian/io/ContextSerializerFactory.java
+   - dir: hessian-lite/target/classes
+     file: com/caucho/hessian/client/HessianProxy.class
+     sourceDir: hessian-lite/src/main/java
+     sourceFile: com/caucho/hessian/client/HessianProxy.java
+   - dir: hessian-lite/target/classes
+     file: com/caucho/hessian/io/AbstractSerializerFactory.class
+     sourceDir: hessian-lite/src/main/java
+     sourceFile: com/caucho/hessian/io/AbstractSerializerFactory.java
+   - dir: hessian-lite/target/classes
+     file: com/caucho/hessian/client/HessianURLConnectionFactory.class
+     sourceDir: hessian-lite/src/main/java
+     sourceFile: com/caucho/hessian/client/HessianURLConnectionFactory.java
+   - dir: hessian-lite/target/classes
+     file: com/caucho/hessian/io/UnsafeDeserializer.class
+     sourceDir: hessian-lite/src/main/java
+     sourceFile: com/caucho/hessian/io/UnsafeDeserializer.java
+   - dir: hessian-lite/target/classes
+     file: com/caucho/hessian/HessianException.class
+     sourceDir: hessian-lite/src/main/java
+     sourceFile: com/caucho/hessian/HessianException.java
+   - dir: hessian-lite/target/classes
+     file: com/caucho/hessian/io/UnsafeSerializer.class
+     sourceDir: hessian-lite/src/main/java
+     sourceFile: com/caucho/hessian/io/UnsafeSerializer.java
+   - dir: hessian-lite/target/classes
+     file: com/caucho/hessian/io/SerializerFactory.class
+     sourceDir: hessian-lite/src/main/java
+     sourceFile: com/caucho/hessian/io/SerializerFactory.java
+   - dir: hessian-lite/target/classes
+     file: com/caucho/hessian/client/HessianConnectionFactory.class
+     sourceDir: hessian-lite/src/main/java
+     sourceFile: com/caucho/hessian/client/HessianConnectionFactory.java
+   - dir: hessian-lite/target/classes
+     file: com/caucho/hessian/io/HessianInput.class
+     sourceDir: hessian-lite/src/main/java
+     sourceFile: com/caucho/hessian/io/HessianInput.java
+   - dir: hessian-lite/target/classes
+     file: com/caucho/hessian/io/Hessian2Input.class
+     sourceDir: hessian-lite/src/main/java
+     sourceFile: com/caucho/hessian/io/Hessian2Input.java
+   - dir: hessian-lite/target/classes
+     file: com/caucho/hessian/util/IdentityIntMap.class
+     sourceDir: hessian-lite/src/main/java
+     sourceFile: com/caucho/hessian/util/IdentityIntMap.java
+   - dir: hessian-lite/target/classes
+     file: com/caucho/hessian/io/HessianDebugInputStream$LogWriter.class
+     sourceDir: hessian-lite/src/main/java
+     sourceFile: com/caucho/hessian/io/HessianDebugInputStream.java
